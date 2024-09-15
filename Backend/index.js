@@ -9,6 +9,7 @@ const cors = require("cors");
 const URL = process.env.MONGO_URL;
 const authRouter = require("./routes/auth/auth-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
+const shopProductsRouter = require("./routes/shop/products-routes");
 
 mongoose
   .connect(URL)
@@ -38,6 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", authRouter);
 app.use("/admin/products", adminProductsRouter);
+app.use("/shop/products", shopProductsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
