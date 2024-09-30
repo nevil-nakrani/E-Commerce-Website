@@ -1,4 +1,5 @@
 import ProductFilter from "@/components/shopping-view/filter";
+import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { sortOptions } from "@/config";
-import { showAllFilteredProducts } from "@/store/shop/products-slice";
+import {
+  showAllFilteredProducts,
+  showProductDetails,
+} from "@/store/shop/products-slice";
 import { ArrowUpDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,16 +27,18 @@ const createSearchParamsHelper = (filterParams) => {
       queryParams.push(`${key} = ${encodeURIComponent(paramValue)}`);
     }
   }
-  console.log(queryParams, " ");
   return queryParams.join("&");
 };
 
 const ShoppingListing = () => {
   const dispatch = useDispatch();
-  const { productList } = useSelector((state) => state.shopProducts);
+  const { productList, productDetails } = useSelector(
+    (state) => state.shopProducts
+  );
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [openDetailsDialog, setopenDetailsDialog] = useState(false);
 
   const handleSort = (value) => {
     setSort(value);
@@ -59,6 +65,10 @@ const ShoppingListing = () => {
     sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
   };
 
+  const handleGetProductDetails = (getCurrentProductId) => {
+    dispatch(showProductDetails(getCurrentProductId));
+  };
+
   useEffect(() => {
     setSort("price-lowtohigh");
     setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
@@ -79,7 +89,11 @@ const ShoppingListing = () => {
     }
   }, [dispatch, sort, filters]);
 
-  console.log(filters);
+  useEffect(() => {
+    if (productDetails !== null) {
+      setopenDetailsDialog(true);
+    }
+  }, [productDetails]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 p-4 md:p-6">
@@ -122,12 +136,18 @@ const ShoppingListing = () => {
             ? productList.map((productItem) => (
                 <ShoppingProductTile
                   key={productItem._id}
+                  handleGetProductDetails={handleGetProductDetails}
                   product={productItem}
                 />
               ))
             : null}
         </div>
       </div>
+      <ProductDetailsDialog
+        open={openDetailsDialog}
+        setOpen={setopenDetailsDialog}
+        productDetails={productDetails}
+      />
     </div>
   );
 };
